@@ -1,8 +1,10 @@
+import math
+
 import OpenGL.GL.shaders as shaders
 import numpy as np
 import pyrr as pr
 from OpenGL.GL import *
-import math
+
 from rubiks_cube.rubiks_cube import RubiksCube
 
 with open("shaders/cube_vertex.glsl") as f:
@@ -36,14 +38,14 @@ class CubeRenderer:
         # Uniform variables - способо передачи данных в шейдер из исполняемой программы
         self.uniformLocations = {
             # ProjectionMatrix отвечает за генерацию проекции 3D моделей на 2D экран
-            "u_ProjectionMatrix": glGetUniformLocation(self.shader, "u_ProjectionMatrix"),
+            "u_ProjectionMatrix":     glGetUniformLocation(self.shader, "u_ProjectionMatrix"),
             # ViewMatrix - transformationMatrix камеры
-            "u_ViewMatrix": glGetUniformLocation(self.shader, "u_ViewMatrix"),
+            "u_ViewMatrix":           glGetUniformLocation(self.shader, "u_ViewMatrix"),
             # Transformation matrix - позиция, вращение, размер обьекта
             "u_TransformationMatrix": glGetUniformLocation(self.shader, "u_TransformationMatrix"),
-            "u_FaceColor": glGetUniformLocation(self.shader, "u_FaceColor"),
-            "u_LightColor": glGetUniformLocation(self.shader, "u_LightColor"),
-            "u_LightPosition": glGetUniformLocation(self.shader, "u_LightPosition"),
+            "u_FaceColor":            glGetUniformLocation(self.shader, "u_FaceColor"),
+            "u_LightColor":           glGetUniformLocation(self.shader, "u_LightColor"),
+            "u_LightPosition":        glGetUniformLocation(self.shader, "u_LightPosition"),
         }
         # 8 вершин куба
         cube_vertices = np.array([1., 1., -1.,
@@ -53,28 +55,15 @@ class CubeRenderer:
                                   -1., 1., -1.,
                                   -1., -1., -1.,
                                   -1., 1., 1.,
-                                  -1.0, -1., 1.,
-
-                                  0.0, -1.0, 0.0,
-                                  0.0, 1.0, 0.0,
-                                  -1.0, 0.0, 0.0,
-                                  1.0, 0.0, 0.0,
-                                  0.0, 0.0, 1.0,
-                                  0.0, 0.0, -1.0], np.float32)
+                                  -1.0, -1., 1., ],
+                                 np.float32)
         # Индексы рисования сторон
-        cube_indices = np.array([5, 7, 3, 1,
-                                 0, 2, 6, 4,
-                                 5, 4, 6, 7,
-                                 3, 2, 0, 1,
-                                 1, 0, 4, 5,
-                                 7, 6, 2, 3], np.uint32)
-        # TODO использовать нормали (хотя освещение почему-то генерируется приавильно и без них)
-        # cube_normals = np.array([0.0, -1.0, 0.0,
-        #                          0.0, 1.0, 0.0,
-        #                          -1.0, 0.0, 0.0,
-        #                          1.0, 0.0, 0.0,
-        #                          0.0, 0.0, 1.0,
-        #                          0.0, 0.0, -1.0], np.float32)
+        cube_indices = np.array([5, 7, 3, 5, 3, 1,
+                                 0, 2, 6, 0, 6, 4,
+                                 5, 4, 6, 5, 6, 7,
+                                 3, 2, 0, 3, 0, 1,
+                                 1, 0, 4, 1, 4, 5,
+                                 7, 6, 2, 7, 2, 3], np.uint32)
 
         # VertexArrayObject - обеькт в памяти видеокарты, хранящий данные о 3D обеькте
         self.vao = glGenVertexArrays(1)
@@ -86,7 +75,7 @@ class CubeRenderer:
 
         indices_ebo = glGenBuffers(1)  # Обьект для хранения индексов
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_ebo)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 96, cube_indices, GL_STATIC_DRAW)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 144, cube_indices, GL_STATIC_DRAW)
 
         # Аттрибут позиции - то, что передается в шейдер автоматически на каждую из вершин
         # В данном случае - позиции вершины
@@ -123,8 +112,8 @@ class CubeRenderer:
                     # Рисуем каждую из сторон индивидуально, передвавая их цвет
                     for i in range(6):
                         glUniform3fv(self.uniformLocations["u_FaceColor"], 1, COLORS[block.facesColors[i]])
-                        ptr = ctypes.c_void_p(i * 4 * 4)  # (void*)(i * 4 * sizeof(float))
-                        glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, ptr)
+                        ptr = ctypes.c_void_p(i * 4 * 6)  # (void*)(i * 6 * sizeof(float))
+                        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, ptr)
 
         glBindVertexArray(0)
         glUseProgram(0)

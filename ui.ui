@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+    <class>MainWindow</class>
+    <widget class="QMainWindow" name="MainWindow">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>1191</width>
+                <height>800</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>MainWindow</string>
+        </property>
+        <widget class="QWidget" name="centralwidget">
+            <widget class="QSlider" name="s_CameraX">
+                <property name="geometry">
+                    <rect>
+                        <x>830</x>
+                        <y>40</y>
+                        <width>22</width>
+                        <height>160</height>
+                    </rect>
+                </property>
+                <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                </property>
+            </widget>
+            <widget class="QSlider" name="s_CameraY">
+                <property name="geometry">
+                    <rect>
+                        <x>870</x>
+                        <y>40</y>
+                        <width>22</width>
+                        <height>160</height>
+                    </rect>
+                </property>
+                <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                </property>
+            </widget>
+            <widget class="Line" name="line">
+                <property name="geometry">
+                    <rect>
+                        <x>913</x>
+                        <y>10</y>
+                        <width>20</width>
+                        <height>251</height>
+                    </rect>
+                </property>
+                <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label">
+                <property name="geometry">
+                    <rect>
+                        <x>820</x>
+                        <y>10</y>
+                        <width>81</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>12</pointsize>
+                    </font>
+                </property>
+                <property name="frameShape">
+                    <enum>QFrame::Box</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                    <string>Camera</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_2">
+                <property name="geometry">
+                    <rect>
+                        <x>830</x>
+                        <y>210</y>
+                        <width>21</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="frameShape">
+                    <enum>QFrame::Box</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                    <string>X</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_3">
+                <property name="geometry">
+                    <rect>
+                        <x>870</x>
+                        <y>210</y>
+                        <width>21</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="frameShape">
+                    <enum>QFrame::Box</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                    <string>Y</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="Line" name="line_2">
+                <property name="geometry">
+                    <rect>
+                        <x>820</x>
+                        <y>250</y>
+                        <width>361</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                </property>
+            </widget>
+            <widget class="QComboBox" name="c_AxisSelect">
+                <property name="geometry">
+                    <rect>
+                        <x>958</x>
+                        <y>100</y>
+                        <width>51</width>
+                        <height>22</height>
+                    </rect>
+                </property>
+                <item>
+                    <property name="text">
+                        <string>X</string>
+                    </property>
+                </item>
+                <item>
+                    <property name="text">
+                        <string>Y</string>
+                    </property>
+                </item>
+                <item>
+                    <property name="text">
+                        <string>Z</string>
+                    </property>
+                </item>
+            </widget>
+            <widget class="QLabel" name="label_4">
+                <property name="geometry">
+                    <rect>
+                        <x>1000</x>
+                        <y>10</y>
+                        <width>111</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>12</pointsize>
+                    </font>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true"/>
+                </property>
+                <property name="frameShape">
+                    <enum>QFrame::Box</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                    <string>Turn Cube</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_5">
+                <property name="geometry">
+                    <rect>
+                        <x>940</x>
+                        <y>50</y>
+                        <width>71</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">border: 1px solid red</string>
+                </property>
+                <property name="frameShape">
+                    <enum>QFrame::Box</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                    <string>Axis</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_6">
+                <property name="geometry">
+                    <rect>
+                        <x>1020</x>
+                        <y>50</y>
+                        <width>71</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">border: 1px solid red</string>
+                </property>
+                <property name="frameShape">
+                    <enum>QFrame::Box</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                    <string>Index</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_7">
+                <property name="geometry">
+                    <rect>
+                        <x>1100</x>
+                        <y>50</y>
+                        <width>71</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">border: 1px solid red</string>
+                </property>
+                <property name="frameShape">
+                    <enum>QFrame::Box</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                    <string>Direction</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="QSpinBox" name="sb_IndexSelector">
+                <property name="geometry">
+                    <rect>
+                        <x>1041</x>
+                        <y>100</y>
+                        <width>51</width>
+                        <height>22</height>
+                    </rect>
+                </property>
+            </widget>
+            <widget class="QCheckBox" name="cb_DirectionSelector">
+                <property name="geometry">
+                    <rect>
+                        <x>1100</x>
+                        <y>100</y>
+                        <width>70</width>
+                        <height>17</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>8</pointsize>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>Clockwise</string>
+                </property>
+            </widget>
+            <widget class="QPushButton" name="b_TurnCube">
+                <property name="geometry">
+                    <rect>
+                        <x>1020</x>
+                        <y>170</y>
+                        <width>71</width>
+                        <height>23</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">background-color: rgb(255, 135, 45); border: 1px solid black</string>
+                </property>
+                <property name="text">
+                    <string>Turn</string>
+                </property>
+            </widget>
+        </widget>
+        <widget class="QMenuBar" name="menubar">
+            <property name="geometry">
+                <rect>
+                    <x>0</x>
+                    <y>0</y>
+                    <width>1191</width>
+                    <height>21</height>
+                </rect>
+            </property>
+        </widget>
+        <widget class="QStatusBar" name="statusbar"/>
+    </widget>
+    <resources/>
+    <connections/>
+</ui>
