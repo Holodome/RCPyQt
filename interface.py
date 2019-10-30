@@ -45,6 +45,7 @@ class CubeViewWidget(QtOpenGL.QGLWidget):
         self.clear()
         if self.figure is None:
             return
+        self.figure.update()
 
         # Обновление логики
         mouse_pos = self.mapFromGlobal(QtGui.QCursor.pos())
@@ -104,9 +105,10 @@ class CubeViewWidget(QtOpenGL.QGLWidget):
 class Application(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-        self.initUi()
 
         self.figure = None
+
+        self.initUi()
 
         self.ignoreRotationChange: bool = False
 
@@ -132,6 +134,10 @@ class Application(QtWidgets.QMainWindow):
         self.view.camera_callback = self.manual_camera_rotation_change_callback
         # Создание куба
         self.b_CreateCube.clicked.connect(self.create_cube)
+        # Вращение куба
+        self.b_TurnCube.clicked.connect(self.turn_cube)
+
+        self.create_cube()
 
     def change_color(self, color_ind):
         value = self.sender().value() / 255
@@ -171,3 +177,10 @@ class Application(QtWidgets.QMainWindow):
         self.figure = figure
         self.view.figure = figure
         self.view.setFocus()
+
+    def turn_cube(self):
+        axis = self.c_AxisSelect.currentIndex()
+        index = self.sb_IndexSelector.value()
+        clockwise = self.cb_DirectionSelector.isChecked()
+        if self.figure is not None:
+            self.figure.turn_cube(index, axis, clockwise)

@@ -109,13 +109,13 @@ class CubeRenderer:
             "u_ProjectionMatrix":     glGetUniformLocation(self.cubeShader, "u_ProjectionMatrix"),
             "u_ViewMatrix":           glGetUniformLocation(self.cubeShader, "u_ViewMatrix"),
             "u_TransformationMatrix": glGetUniformLocation(self.cubeShader, "u_TransformationMatrix"),
-            "u_FaceColor":     glGetUniformLocation(self.cubeShader, "u_FaceColor"),
-            "u_LightColor":    glGetUniformLocation(self.cubeShader, "u_LightColor"),
-            "u_LightPosition": glGetUniformLocation(self.cubeShader, "u_LightPosition"),
-            "u_Reflectivity":  glGetUniformLocation(self.cubeShader, "u_Reflectivity"),
-            "u_FaceNormal":    glGetUniformLocation(self.cubeShader, "u_FaceNormal"),
-            "u_DiffuseFactor": glGetUniformLocation(self.cubeShader, "u_DiffuseFactor"),
-            "u_IsOutline":     glGetUniformLocation(self.cubeShader, "u_IsOutline"),
+            "u_FaceColor":            glGetUniformLocation(self.cubeShader, "u_FaceColor"),
+            "u_LightColor":           glGetUniformLocation(self.cubeShader, "u_LightColor"),
+            "u_LightPosition":        glGetUniformLocation(self.cubeShader, "u_LightPosition"),
+            "u_Reflectivity":         glGetUniformLocation(self.cubeShader, "u_Reflectivity"),
+            "u_FaceNormal":           glGetUniformLocation(self.cubeShader, "u_FaceNormal"),
+            "u_DiffuseFactor":        glGetUniformLocation(self.cubeShader, "u_DiffuseFactor"),
+            "u_IsOutline":            glGetUniformLocation(self.cubeShader, "u_IsOutline"),
         }
 
         # 8 вершин куба
@@ -189,12 +189,13 @@ class CubeRenderer:
                     transformation_matrix = pr.matrix44.multiply(transformation_matrix, pr.matrix44.create_from_scale(
                         cube.blockSize))
                     if cube.turning and (cube.turningWholeCube or block in cube.rotatingBlocks):
+                        rot_coef = 1 if cube.turningClockwise else -1
                         if cube.rotationAxis == 0:
-                            rot = pr.matrix44.create_from_x_rotation(math.radians(cube.rotationAngle))
+                            rot = pr.matrix44.create_from_x_rotation(math.radians(cube.rotationAngle) * rot_coef)
                         elif cube.rotationAxis == 1:
-                            rot = pr.matrix44.create_from_y_rotation(math.radians(cube.rotationAngle))
+                            rot = pr.matrix44.create_from_y_rotation(math.radians(cube.rotationAngle) * rot_coef)
                         else:
-                            rot = pr.matrix44.create_from_z_rotation(math.radians(cube.rotationAngle))
+                            rot = pr.matrix44.create_from_z_rotation(math.radians(cube.rotationAngle) * rot_coef)
                         transformation_matrix = pr.matrix44.multiply(transformation_matrix, rot)
 
                     glBindVertexArray(self.cubeVao)
