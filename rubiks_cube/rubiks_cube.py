@@ -10,7 +10,7 @@ ROTATION_SPEED = 4.5
 class RubiksCube:
     def __init__(self, size):
         self.size = size
-        self.offset = np.array([-(size + 1) // 2, -(size + 1) // 2, -(size + 1) // 2], dtype=np.float32)
+        self.offset = np.array([-(size - 1), -(size - 1), -(size - 1)], dtype=np.float32)
 
         self.blocks = []
         for x in range(size):

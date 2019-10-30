@@ -14,13 +14,13 @@ with open("shaders/cube_fragment.glsl") as f:
     FRAGMENT_SHADER = f.read()
 
 COLORS = [
+    pr.Vector3([0.0, 0.0, 0.0]),
+    pr.Vector3([1.0, 1.0, 1.0]),
     pr.Vector3([1.0, 1.0, 0.0]),
-    pr.Vector3([0.0, 1.0, 0.0]),
     pr.Vector3([0.0, 1.0, 0.0]),
     pr.Vector3([0.0, 0.0, 1.0]),
     pr.Vector3([1.0, 0.0, 0.0]),
-    pr.Vector3([1.0, 0.5, 0.0]),
-    pr.Vector3([1.0, 0.0, 1.0])
+    pr.Vector3([1.0, 0.5, 0.0])
 ]
 
 
@@ -46,16 +46,17 @@ class CubeRenderer:
             "u_FaceColor":            glGetUniformLocation(self.shader, "u_FaceColor"),
             "u_LightColor":           glGetUniformLocation(self.shader, "u_LightColor"),
             "u_LightPosition":        glGetUniformLocation(self.shader, "u_LightPosition"),
+            "u_Reflectivity":         glGetUniformLocation(self.shader, "u_Reflectivity"),
         }
         # 8 вершин куба
-        cube_vertices = np.array([1., 1., -1.,
-                                  1., -1., -1.,
-                                  1., 1., 1.,
-                                  1., -1., 1.,
-                                  -1., 1., -1.,
-                                  -1., -1., -1.,
-                                  -1., 1., 1.,
-                                  -1.0, -1., 1., ],
+        cube_vertices = np.array([1.0, 1.0, -1.0,
+                                  1.0, -1.0, -1.0,
+                                  1.0, 1.0, 1.0,
+                                  1.0, -1.0, 1.0,
+                                  -1.0, 1.0, -1.0,
+                                  -1.0, -1.0, -1.0,
+                                  -1.0, 1.0, 1.0,
+                                  -1.0, -1.0, 1.0, ],
                                  np.float32)
         # Индексы рисования сторон
         cube_indices = np.array([5, 7, 3, 5, 3, 1,
@@ -84,13 +85,14 @@ class CubeRenderer:
 
         glBindVertexArray(0)
 
-    def render(self, cube: RubiksCube, camera, light):
+    def render(self, cube: RubiksCube, camera, light, reflectivity):
         glUseProgram(self.shader)  # Используем шейдер
         glBindVertexArray(self.vao)  # Используем модель куба
         glUniformMatrix4fv(self.uniformLocations["u_ProjectionMatrix"], 1, GL_FALSE, camera.projectionMatrix)
         glUniformMatrix4fv(self.uniformLocations["u_ViewMatrix"], 1, GL_FALSE, camera.viewMatrix)
         glUniform3fv(self.uniformLocations["u_LightPosition"], 1, light.position)
         glUniform3fv(self.uniformLocations["u_LightColor"], 1, light.color)
+        glUniform1f(self.uniformLocations["u_Reflectivity"], reflectivity)
 
         for row in cube.blocks:
             for col in row:
