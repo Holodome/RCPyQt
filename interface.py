@@ -13,6 +13,7 @@ class CubeViewWidget(QtOpenGL.QGLWidget):
     def __init__(self, parent=None):
         fmt = QtOpenGL.QGLFormat()
         fmt.setVersion(3, 3)
+        fmt.setProfile(QtOpenGL.QGLFormat.CoreProfile)
         fmt.setSampleBuffers(True)
 
         super().__init__(fmt, parent)
@@ -89,7 +90,8 @@ class CubeViewWidget(QtOpenGL.QGLWidget):
 
     @staticmethod
     def _opengl_info() -> str:
-        return f"""### OpenGL info ###        
+        return f"""### OpenGL info ###       
+    
  Vendor: {glGetString(GL_VENDOR).decode("utf-8")}
  Renderer: {glGetString(GL_RENDERER).decode("utf-8")}
  OpenGL Version: {glGetString(GL_VERSION).decode("utf-8")}

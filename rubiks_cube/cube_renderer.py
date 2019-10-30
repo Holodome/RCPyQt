@@ -8,7 +8,7 @@ from OpenGL.GL import *
 from rubiks_cube.rubiks_cube import RubiksCube
 
 CUBE_VERTEX_SHADER = """
-#version 330
+#version %d%d0
 
 layout(location = 0) in vec3 in_Pos;
 
@@ -34,7 +34,7 @@ void main()
 }"""
 
 CUBE_FRAGMENT_SHADER = """
-#version 330
+#version %d%d0
 
 in vec3 pass_SurfaceNormal;
 in vec3 pass_ToCameraVector;
@@ -99,27 +99,6 @@ class CubeRenderer:
     """
 
     def __init__(self):
-        # Шейдеры - программы, исполняемые GPU
-        # Они работают намного быстрей идентичных на CPU
-        # В данном случае шейдер определяет позицию вершин всех блкоков куба и дает им цвета
-        self.cubeShader = shaders.compileProgram(shaders.compileShader(CUBE_VERTEX_SHADER, GL_VERTEX_SHADER),
-                                                 shaders.compileShader(CUBE_FRAGMENT_SHADER, GL_FRAGMENT_SHADER))
-        # Uniform variables - способо передачи данных в шейдер из исполняемой программы
-        self.cubeUniformLocations = {
-            "u_ProjectionMatrix":     glGetUniformLocation(self.cubeShader, "u_ProjectionMatrix"),
-            "u_ViewMatrix":           glGetUniformLocation(self.cubeShader, "u_ViewMatrix"),
-            "u_TransformationMatrix": glGetUniformLocation(self.cubeShader, "u_TransformationMatrix"),
-            "u_FaceColor":            glGetUniformLocation(self.cubeShader, "u_FaceColor"),
-            "u_LightColor":           glGetUniformLocation(self.cubeShader, "u_LightColor"),
-            "u_LightPosition":        glGetUniformLocation(self.cubeShader, "u_LightPosition"),
-            "u_Reflectivity":         glGetUniformLocation(self.cubeShader, "u_Reflectivity"),
-            "u_FaceNormal":           glGetUniformLocation(self.cubeShader, "u_FaceNormal"),
-            "u_DiffuseFactor":        glGetUniformLocation(self.cubeShader, "u_DiffuseFactor"),
-            "u_IsOutline":            glGetUniformLocation(self.cubeShader, "u_IsOutline"),
-        }
-        glUseProgram(self.cubeShader)
-        glUniformMatrix4fv(self.cubeUniformLocations["u_ViewMatrix"], 1, GL_FALSE, pr.Matrix44.identity())
-
         # 8 вершин куба
         cube_vertices = np.array([1.0, 1.0, -1.0,
                                   1.0, -1.0, -1.0,
@@ -181,6 +160,33 @@ class CubeRenderer:
                      GL_STATIC_DRAW)
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(0)
+
+        major = glGetInteger(GL_MAJOR_VERSION)
+        minor = glGetInteger(GL_MINOR_VERSION)
+        # Шейдеры - программы, исполняемые GPU
+        # Они работают намного быстрей идентичных на CPU
+        # В данном случае шейдер определяет позицию вершин всех блкоков куба и дает им цвета
+        # NOTE: по некоторой причине на MacOS Qt не может запросить нужную версию OpenGL - форматирую код под нужную
+        # NOTE: в некоторых версиях OpenGL шейдер не может быть validated без привязанного VertexArray
+        self.cubeShader = shaders.compileProgram(shaders.compileShader(CUBE_VERTEX_SHADER % (major, minor),
+                                                                       GL_VERTEX_SHADER),
+                                                 shaders.compileShader(CUBE_FRAGMENT_SHADER % (major, minor),
+                                                                       GL_FRAGMENT_SHADER))
+        # Uniform variables - способо передачи данных в шейдер из исполняемой программы
+        self.cubeUniformLocations = {
+            "u_ProjectionMatrix":     glGetUniformLocation(self.cubeShader, "u_ProjectionMatrix"),
+            "u_ViewMatrix":           glGetUniformLocation(self.cubeShader, "u_ViewMatrix"),
+            "u_TransformationMatrix": glGetUniformLocation(self.cubeShader, "u_TransformationMatrix"),
+            "u_FaceColor":            glGetUniformLocation(self.cubeShader, "u_FaceColor"),
+            "u_LightColor":           glGetUniformLocation(self.cubeShader, "u_LightColor"),
+            "u_LightPosition":        glGetUniformLocation(self.cubeShader, "u_LightPosition"),
+            "u_Reflectivity":         glGetUniformLocation(self.cubeShader, "u_Reflectivity"),
+            "u_FaceNormal":           glGetUniformLocation(self.cubeShader, "u_FaceNormal"),
+            "u_DiffuseFactor":        glGetUniformLocation(self.cubeShader, "u_DiffuseFactor"),
+            "u_IsOutline":            glGetUniformLocation(self.cubeShader, "u_IsOutline"),
+        }
+        glUseProgram(self.cubeShader)
+        glUniformMatrix4fv(self.cubeUniformLocations["u_ViewMatrix"], 1, GL_FALSE, pr.Matrix44.identity())
 
         glBindVertexArray(0)
 
