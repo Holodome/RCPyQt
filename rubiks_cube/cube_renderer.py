@@ -117,6 +117,8 @@ class CubeRenderer:
             "u_DiffuseFactor":        glGetUniformLocation(self.cubeShader, "u_DiffuseFactor"),
             "u_IsOutline":            glGetUniformLocation(self.cubeShader, "u_IsOutline"),
         }
+        glUseProgram(self.cubeShader)
+        glUniformMatrix4fv(self.cubeUniformLocations["u_ViewMatrix"], 1, GL_FALSE, pr.Matrix44.identity())
 
         # 8 вершин куба
         cube_vertices = np.array([1.0, 1.0, -1.0,
@@ -146,7 +148,7 @@ class CubeRenderer:
                      GL_STATIC_DRAW)
         # Аттрибут - то, что передается в шейдер автоматически на каждую из вершин
         # В данном случае - позиции вершины
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, ctypes.c_void_p(0))
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(0)
 
         glBindVertexArray(0)
@@ -162,7 +164,22 @@ class CubeRenderer:
                                                              1, 0, 0, 4, 4, 5, 5, 1,
                                                              7, 6, 6, 2, 2, 3, 3, 7], np.uint32),
                      GL_STATIC_DRAW)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, ctypes.c_void_p(0))
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, None)
+        glEnableVertexAttribArray(0)
+
+        self.squareVao = glGenVertexArrays(1)
+        glBindVertexArray(self.squareVao)
+        square_vertices_vbo = glGenBuffers(1)
+        glBindBuffer(GL_ARRAY_BUFFER, square_vertices_vbo)
+        glBufferData(GL_ARRAY_BUFFER, 72, np.array([1, -1, -1,
+                                                    1, 1, -1,
+                                                    1, 1, 1,
+
+                                                    1, 1, 1,
+                                                    1, -1, 1,
+                                                    1, -1, -1, ], dtype=np.float32),
+                     GL_STATIC_DRAW)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(0)
 
         glBindVertexArray(0)
@@ -170,9 +187,10 @@ class CubeRenderer:
     def render(self, cube: RubiksCube, proj_mat: pr.Matrix44, view_mat: pr.Matrix44,
                light_col: pr.Vector3, light_pos: pr.Vector3,
                reflectivity: float, diffuse_factor: float):
-        glUseProgram(self.cubeShader)
+        glUseProgram(self.cubeShader)  # Используем один шейдер на весь куб
+
         glUniformMatrix4fv(self.cubeUniformLocations["u_ProjectionMatrix"], 1, GL_FALSE, proj_mat)
-        glUniformMatrix4fv(self.cubeUniformLocations["u_ViewMatrix"], 1, GL_FALSE, view_mat)
+        # glUniformMatrix4fv(self.cubeUniformLocations["u_ViewMatrix"], 1, GL_FALSE, pr.Matrix44.identity())
         glUniform3fv(self.cubeUniformLocations["u_LightPosition"], 1, light_pos)
         glUniform3fv(self.cubeUniformLocations["u_LightColor"], 1, light_col)
         glUniform1f(self.cubeUniformLocations["u_Reflectivity"], reflectivity)
@@ -186,8 +204,8 @@ class CubeRenderer:
 
                     # Считаем transformation_matrix исходя из позиции блока в кубе (2 - размер одного блока)
                     transformation_matrix = pr.matrix44.create_from_translation(cube.offset + block.position * 2)
-                    transformation_matrix = pr.matrix44.multiply(transformation_matrix, pr.matrix44.create_from_scale(
-                        cube.blockSize))
+                    transformation_matrix = pr.matrix44.multiply(transformation_matrix,
+                                                                 pr.matrix44.create_from_scale(cube.blockSize))
                     if cube.turning and (cube.turningWholeCube or block in cube.rotatingBlocks):
                         rot_coef = 1 if cube.turningClockwise else -1
                         if cube.rotationAxis == 0:
@@ -197,20 +215,58 @@ class CubeRenderer:
                         else:
                             rot = pr.matrix44.create_from_z_rotation(math.radians(cube.rotationAngle) * rot_coef)
                         transformation_matrix = pr.matrix44.multiply(transformation_matrix, rot)
+                    transformation_matrix = pr.matrix44.multiply(transformation_matrix, view_mat)
 
-                    glBindVertexArray(self.cubeVao)
                     glUniformMatrix4fv(self.cubeUniformLocations["u_TransformationMatrix"],
                                        1, GL_FALSE, transformation_matrix)
+                    # Отрисовка сторон куба
+                    glBindVertexArray(self.cubeVao)
                     glUniform1i(self.cubeUniformLocations["u_IsOutline"], 0)
-                    # Рисуем каждую из сторон индивидуально, передвавая их цвет
-                    for i in range(6):
+                    for i in range(6):  # Рисуем каждую из сторон индивидуально, передвавая их цвет
+                        color = block.facesColors[i]
+                        if color == 0:
+                            continue
+
                         glUniform3fv(self.cubeUniformLocations["u_FaceNormal"], 1, NORMALS[i])
-                        glUniform3fv(self.cubeUniformLocations["u_FaceColor"], 1, COLORS[block.facesColors[i]])
+                        glUniform3fv(self.cubeUniformLocations["u_FaceColor"], 1, COLORS[color])
                         ptr = ctypes.c_void_p(i * 6 * 4)  # (void*)(i * 6 * sizeof(float))
                         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, ptr)
-                    glUniform1i(self.cubeUniformLocations["u_IsOutline"], 1)
+                    # Отрисовка внешней линии
                     glBindVertexArray(self.outlineVao)
-                    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, ctypes.c_void_p(0))
+                    glUniform1i(self.cubeUniformLocations["u_IsOutline"], 1)
+                    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, None)
+                    # Отрисовка черных квадратов
+                    """
+                    if not cube.turning or cube.turningWholeCube:
+                        continue
+
+                    length = cube.size * cube.blockSize.x
+
+                    transformation_matrix = pr.Matrix44()
+                    if cube.rotationAxis == 1:
+                        transformation_matrix = pr.matrix44.create_from_translation(
+                            [length / 2, length / 2, length / 2])
+                        transformation_matrix = pr.matrix44.multiply(transformation_matrix,
+                                                                     pr.matrix44.create_from_z_rotation(
+                                                                         math.radians(90)))
+                        transformation_matrix = pr.matrix44.multiply(transformation_matrix,
+                                                                     pr.matrix44.create_from_translation(
+                                                                         [-length / 2, -length / 2, -length / 2]))
+                    elif cube.rotationAxis == 2:
+                        transformation_matrix = pr.matrix44.create_from_translation(
+                            [length / 2, length / 2, length / 2])
+                        transformation_matrix = pr.matrix44.multiply(transformation_matrix,
+                                                                     pr.matrix44.create_from_y_rotation(
+                                                                         math.radians(-90)))
+                        transformation_matrix = pr.matrix44.multiply(transformation_matrix,
+                                                                     pr.matrix44.create_from_translation(
+                                                                         [-length / 2, -length / 2, -length / 2]))
+
+                    if cube.rotationIndex != 0:
+                        width = cube.blockSize.x * cube.rotationIndex"""
+
+                    glBindVertexArray(self.squareVao)
+                    glUniform1i(self.cubeUniformLocations["u_IsOutline"], 0)
+                    glDrawArrays(GL_TRIANGLES, 0, 18)
 
         glBindVertexArray(0)
-        glUseProgram(0)
