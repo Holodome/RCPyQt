@@ -7,6 +7,7 @@ from camera import Camera
 from rubiks_cube.cube_renderer import CubeRenderer
 from rubiks_cube.rubiks_cube import RubiksCube
 from utils import Light
+import time
 
 
 class CubeViewWidget(QtOpenGL.QGLWidget):
@@ -22,6 +23,7 @@ class CubeViewWidget(QtOpenGL.QGLWidget):
         self.camera = Camera()
         self.light = Light(pr.Vector3([0.0, 0.0, -10.0]), pr.Vector3([1.0, 1.0, 1.0]))
         self.reflectivity: float = 0.5
+        self.diffuse_factor: float = 1.0
 
         self.cube = RubiksCube(3)
 
@@ -35,6 +37,7 @@ class CubeViewWidget(QtOpenGL.QGLWidget):
         self.renderer = CubeRenderer()
 
         glEnable(GL_DEPTH_TEST)
+        glDepthFunc(GL_LESS)
         glEnable(GL_CULL_FACE)
         glCullFace(GL_FRONT)
 
@@ -56,7 +59,7 @@ class CubeViewWidget(QtOpenGL.QGLWidget):
         self.camera_callback(self.camera.pitch, self.camera.yaw)
         # Отрисовка здесь
         self.clear()
-        self.renderer.render(self.cube, self.camera, self.light, self.reflectivity)
+        self.renderer.render(self.cube, self.camera, self.light, self.reflectivity, self.diffuse_factor)
         self.update()
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
@@ -112,8 +115,9 @@ class Application(QtWidgets.QMainWindow):
         self.s_LPx.valueChanged.connect(lambda: self.change_light_position(0))
         self.s_LPy.valueChanged.connect(lambda: self.change_light_position(1))
         self.s_LPz.valueChanged.connect(lambda: self.change_light_position(2))
-        # Отражаемость
+        # Параметры света
         self.s_R.valueChanged.connect(self.change_reflectivity)
+        self.s_D.valueChanged.connect(self.change_diffuse)
         # Камера
         self.s_Cx.valueChanged.connect(lambda: self.change_camera_rotation(0))
         self.s_Cy.valueChanged.connect(lambda: self.change_camera_rotation(1))
@@ -132,6 +136,10 @@ class Application(QtWidgets.QMainWindow):
     def change_reflectivity(self):
         value = self.sender().value() / 100
         self.view.reflectivity = value
+
+    def change_diffuse(self):
+        value = self.sender().value() / 100
+        self.view.diffuse_factor = value
 
     def change_camera_rotation(self, rot_ind):
         if self.ignore_rotation_change:

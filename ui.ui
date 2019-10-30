@@ -761,7 +761,7 @@
             <widget class="QSlider" name="s_R">
                 <property name="geometry">
                     <rect>
-                        <x>1130</x>
+                        <x>1100</x>
                         <y>310</y>
                         <width>22</width>
                         <height>160</height>
@@ -775,6 +775,79 @@
                 </property>
                 <property name="orientation">
                     <enum>Qt::Vertical</enum>
+                </property>
+            </widget>
+            <widget class="QSlider" name="s_D">
+                <property name="geometry">
+                    <rect>
+                        <x>1140</x>
+                        <y>310</y>
+                        <width>22</width>
+                        <height>160</height>
+                    </rect>
+                </property>
+                <property name="maximum">
+                    <number>100</number>
+                </property>
+                <property name="value">
+                    <number>100</number>
+                </property>
+                <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_17">
+                <property name="geometry">
+                    <rect>
+                        <x>1100</x>
+                        <y>480</y>
+                        <width>21</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="frameShape">
+                    <enum>QFrame::Box</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                    <string>R</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_18">
+                <property name="geometry">
+                    <rect>
+                        <x>1140</x>
+                        <y>480</y>
+                        <width>21</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="frameShape">
+                    <enum>QFrame::Box</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                    <string>D</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
                 </property>
             </widget>
         </widget>

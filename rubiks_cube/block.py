@@ -26,6 +26,7 @@ class Block:
         return block
 
     def set_faces_colors(self, size):
+        # BOTTOM TOP LEFT RIGHT BACK FRONT
         if self.position[1] == 0:
             self.facesColors[0] = YELLOW
             self.numberOfColors += 1

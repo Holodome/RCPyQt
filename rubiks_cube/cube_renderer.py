@@ -7,11 +7,94 @@ from OpenGL.GL import *
 
 from rubiks_cube.rubiks_cube import RubiksCube
 
-with open("shaders/cube_vertex.glsl") as f:
-    VERTEX_SHADER = f.read()
+CUBE_VERTEX_SHADER = """
+#version 330
 
-with open("shaders/cube_fragment.glsl") as f:
-    FRAGMENT_SHADER = f.read()
+layout(location = 0) in vec3 in_Pos;
+
+out vec3 pass_SurfaceNormal;
+out vec3 pass_ToCameraVector;
+out vec3 pass_ToLightVector;
+
+uniform vec3 u_LightPosition;
+uniform vec3 u_FaceNormal;
+
+uniform mat4 u_TransformationMatrix;
+uniform mat4 u_ProjectionMatrix;
+uniform mat4 u_ViewMatrix;
+
+void main()
+{
+    vec4 worldPosition = u_TransformationMatrix * vec4(in_Pos, 1.0);
+    gl_Position = u_ProjectionMatrix * u_ViewMatrix * worldPosition;
+
+    pass_SurfaceNormal = (u_TransformationMatrix * vec4(u_FaceNormal, 0.0)).xyz;
+    pass_ToLightVector = u_LightPosition - worldPosition.xyz;
+    pass_ToCameraVector = (inverse(u_ViewMatrix) * vec4(0.0, 0.0, 0.0, 1.0)).xyz - worldPosition.xyz;
+}"""
+
+CUBE_FRAGMENT_SHADER = """
+#version 330
+
+in vec3 pass_SurfaceNormal;
+in vec3 pass_ToCameraVector;
+in vec3 pass_ToLightVector;
+
+out vec4 out_Color;
+
+uniform vec3 u_LightColor;
+uniform vec3 u_FaceColor;
+
+uniform float u_Reflectivity;
+uniform float u_DiffuseFactor;
+
+void main()
+{
+    if (u_FaceColor == vec3(0.0)) discard;
+
+    vec3 unitNormal = normalize(pass_SurfaceNormal);
+    vec3 unitLightVector = normalize(pass_ToLightVector);
+
+    vec3 diffuse = vec3(u_DiffuseFactor);
+
+    vec3 unitVectorToCamera = normalize(pass_ToCameraVector);
+    vec3 lightDirection = -unitLightVector;
+    vec3 reflectedLightDirection = reflect(lightDirection, unitNormal);
+
+    float specularFactor = max(dot(reflectedLightDirection, unitVectorToCamera), 0.0);
+    float dampedFactor = pow(specularFactor, 1);
+
+    vec3 finalSpecular = dampedFactor * u_Reflectivity * u_LightColor;
+
+    out_Color = vec4(diffuse, 1.0) * vec4(u_FaceColor, 1.0) + vec4(finalSpecular, 1.0);
+}
+"""
+
+OUTLINE_VERTEX_SHADER = """
+#version 330
+
+layout(location = 0) in vec3 in_Pos;
+
+uniform mat4 u_TransformationMatrix;
+uniform mat4 u_ProjectionMatrix;
+uniform mat4 u_ViewMatrix;
+
+void main()
+{
+    gl_Position = u_ProjectionMatrix * u_ViewMatrix * u_TransformationMatrix * vec4(in_Pos, 1.0);
+}
+"""
+
+OUTLINE_FRAGMENT_SHADER = """
+#version 330
+
+out vec4 out_Color;
+
+void main()
+{
+    out_Color = vec4(0.0, 0.0, 0.0, 1.0);
+}
+"""
 
 COLORS = [
     pr.Vector3([0.0, 0.0, 0.0]),
@@ -21,6 +104,15 @@ COLORS = [
     pr.Vector3([0.0, 0.0, 1.0]),
     pr.Vector3([1.0, 0.0, 0.0]),
     pr.Vector3([1.0, 0.5, 0.0])
+]
+
+NORMALS = [
+    pr.Vector3([0.0, -1.0, 0.0]),
+    pr.Vector3([0.0, 1.0, 0.0]),
+    pr.Vector3([-1.0, 0.0, 0.0]),
+    pr.Vector3([1.0, 0.0, 0.0]),
+    pr.Vector3([0.0, 0.0, -1.0]),
+    pr.Vector3([0.0, 0.0, 1.0]),
 ]
 
 
@@ -33,21 +125,32 @@ class CubeRenderer:
         # Шейдеры - программы, исполняемые GPU
         # Они работают намного быстрей идентичных на CPU
         # В данном случае шейдер определяет позицию вершин всех блкоков куба и дает им цвета
-        self.shader = shaders.compileProgram(shaders.compileShader(VERTEX_SHADER, GL_VERTEX_SHADER),
-                                             shaders.compileShader(FRAGMENT_SHADER, GL_FRAGMENT_SHADER))
+        self.cubeShader = shaders.compileProgram(shaders.compileShader(CUBE_VERTEX_SHADER, GL_VERTEX_SHADER),
+                                                 shaders.compileShader(CUBE_FRAGMENT_SHADER, GL_FRAGMENT_SHADER))
         # Uniform variables - способо передачи данных в шейдер из исполняемой программы
-        self.uniformLocations = {
+        self.cubeUniformLocations = {
             # ProjectionMatrix отвечает за генерацию проекции 3D моделей на 2D экран
-            "u_ProjectionMatrix":     glGetUniformLocation(self.shader, "u_ProjectionMatrix"),
+            "u_ProjectionMatrix":     glGetUniformLocation(self.cubeShader, "u_ProjectionMatrix"),
             # ViewMatrix - transformationMatrix камеры
-            "u_ViewMatrix":           glGetUniformLocation(self.shader, "u_ViewMatrix"),
+            "u_ViewMatrix":           glGetUniformLocation(self.cubeShader, "u_ViewMatrix"),
             # Transformation matrix - позиция, вращение, размер обьекта
-            "u_TransformationMatrix": glGetUniformLocation(self.shader, "u_TransformationMatrix"),
-            "u_FaceColor":            glGetUniformLocation(self.shader, "u_FaceColor"),
-            "u_LightColor":           glGetUniformLocation(self.shader, "u_LightColor"),
-            "u_LightPosition":        glGetUniformLocation(self.shader, "u_LightPosition"),
-            "u_Reflectivity":         glGetUniformLocation(self.shader, "u_Reflectivity"),
+            "u_TransformationMatrix": glGetUniformLocation(self.cubeShader, "u_TransformationMatrix"),
+            "u_FaceColor":            glGetUniformLocation(self.cubeShader, "u_FaceColor"),
+            "u_LightColor":           glGetUniformLocation(self.cubeShader, "u_LightColor"),
+            "u_LightPosition":        glGetUniformLocation(self.cubeShader, "u_LightPosition"),
+            "u_Reflectivity":         glGetUniformLocation(self.cubeShader, "u_Reflectivity"),
+            "u_FaceNormal":           glGetUniformLocation(self.cubeShader, "u_FaceNormal"),
+            "u_DiffuseFactor":        glGetUniformLocation(self.cubeShader, "u_DiffuseFactor"),
         }
+
+        self.outlineShader = shaders.compileProgram(shaders.compileShader(OUTLINE_VERTEX_SHADER, GL_VERTEX_SHADER),
+                                                    shaders.compileShader(OUTLINE_FRAGMENT_SHADER, GL_FRAGMENT_SHADER))
+        self.outlineUniformLocations = {
+            "u_ProjectionMatrix":     glGetUniformLocation(self.outlineShader, "u_ProjectionMatrix"),
+            "u_ViewMatrix":           glGetUniformLocation(self.outlineShader, "u_ViewMatrix"),
+            "u_TransformationMatrix": glGetUniformLocation(self.outlineShader, "u_TransformationMatrix"),
+        }
+
         # 8 вершин куба
         cube_vertices = np.array([1.0, 1.0, -1.0,
                                   1.0, -1.0, -1.0,
@@ -56,47 +159,66 @@ class CubeRenderer:
                                   -1.0, 1.0, -1.0,
                                   -1.0, -1.0, -1.0,
                                   -1.0, 1.0, 1.0,
-                                  -1.0, -1.0, 1.0, ],
-                                 np.float32)
-        # Индексы рисования сторон
-        cube_indices = np.array([5, 7, 3, 5, 3, 1,
-                                 0, 2, 6, 0, 6, 4,
-                                 5, 4, 6, 5, 6, 7,
-                                 3, 2, 0, 3, 0, 1,
-                                 1, 0, 4, 1, 4, 5,
-                                 7, 6, 2, 7, 2, 3], np.uint32)
+                                  -1.0, -1.0, 1.0, ], np.float32)
 
         # VertexArrayObject - обеькт в памяти видеокарты, хранящий данные о 3D обеькте
-        self.vao = glGenVertexArrays(1)
-        glBindVertexArray(self.vao)
+        self.cubeVao = glGenVertexArrays(1)
+        glBindVertexArray(self.cubeVao)
         # У VAO есть Buffers - вершины, индексы, аттрибуты
         vertices_vbo = glGenBuffers(1)  # Обьект для хранения вершин
         glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo)
         glBufferData(GL_ARRAY_BUFFER, 96, cube_vertices, GL_STATIC_DRAW)
-
         indices_ebo = glGenBuffers(1)  # Обьект для хранения индексов
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_ebo)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 144, cube_indices, GL_STATIC_DRAW)
-
-        # Аттрибут позиции - то, что передается в шейдер автоматически на каждую из вершин
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 144, np.array([5, 7, 3, 5, 3, 1,
+                                                             0, 2, 6, 0, 6, 4,
+                                                             5, 4, 6, 5, 6, 7,
+                                                             3, 2, 0, 3, 0, 1,
+                                                             1, 0, 4, 1, 4, 5,
+                                                             7, 6, 2, 7, 2, 3], np.uint32),
+                     GL_STATIC_DRAW)
+        # Аттрибут - то, что передается в шейдер автоматически на каждую из вершин
         # В данном случае - позиции вершины
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, ctypes.c_void_p(0))
         glEnableVertexAttribArray(0)
 
         glBindVertexArray(0)
+        self.outlineVao = glGenVertexArrays(1)
+        glBindVertexArray(self.outlineVao)
+        glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo)  # Используем буффер вершин второй раз
+        outline_indices_ebo = glGenBuffers(1)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, outline_indices_ebo)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 192, np.array([5, 7, 7, 3, 3, 1, 1, 5,
+                                                             0, 2, 2, 6, 6, 4, 4, 0,
+                                                             5, 4, 4, 6, 6, 7, 7, 5,
+                                                             3, 2, 2, 0, 0, 1, 1, 3,
+                                                             1, 0, 0, 4, 4, 5, 5, 1,
+                                                             7, 6, 6, 2, 2, 3, 3, 7], np.uint32),
+                     GL_STATIC_DRAW)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, ctypes.c_void_p(0))
+        glEnableVertexAttribArray(0)
 
-    def render(self, cube: RubiksCube, camera, light, reflectivity):
-        glUseProgram(self.shader)  # Используем шейдер
-        glBindVertexArray(self.vao)  # Используем модель куба
-        glUniformMatrix4fv(self.uniformLocations["u_ProjectionMatrix"], 1, GL_FALSE, camera.projectionMatrix)
-        glUniformMatrix4fv(self.uniformLocations["u_ViewMatrix"], 1, GL_FALSE, camera.viewMatrix)
-        glUniform3fv(self.uniformLocations["u_LightPosition"], 1, light.position)
-        glUniform3fv(self.uniformLocations["u_LightColor"], 1, light.color)
-        glUniform1f(self.uniformLocations["u_Reflectivity"], reflectivity)
+        glBindVertexArray(0)
+
+    def render(self, cube: RubiksCube, camera, light, reflectivity, diffuse_factor):
+        glUseProgram(self.cubeShader)
+        glUniformMatrix4fv(self.cubeUniformLocations["u_ProjectionMatrix"], 1, GL_FALSE, camera.projectionMatrix)
+        glUniformMatrix4fv(self.cubeUniformLocations["u_ViewMatrix"], 1, GL_FALSE, camera.viewMatrix)
+        glUniform3fv(self.cubeUniformLocations["u_LightPosition"], 1, light.position)
+        glUniform3fv(self.cubeUniformLocations["u_LightColor"], 1, light.color)
+        glUniform1f(self.cubeUniformLocations["u_Reflectivity"], reflectivity)
+        glUniform1f(self.cubeUniformLocations["u_DiffuseFactor"], diffuse_factor)
+
+        glUseProgram(self.outlineShader)
+        glUniformMatrix4fv(self.outlineUniformLocations["u_ProjectionMatrix"], 1, GL_FALSE, camera.projectionMatrix)
+        glUniformMatrix4fv(self.outlineUniformLocations["u_ViewMatrix"], 1, GL_FALSE, camera.viewMatrix)
 
         for row in cube.blocks:
             for col in row:
                 for block in col:
+                    if block.numberOfColors == 0:
+                        continue
+
                     # Считаем transformation_matrix исходя из позиции блока в кубе (2 - размер одного блока)
                     transformation_matrix = pr.matrix44.create_from_translation(cube.offset + block.position * 2)
                     if cube.turning and (cube.turningWholeCube or block in cube.rotatingBlocks):
@@ -108,14 +230,22 @@ class CubeRenderer:
                             rot = pr.matrix44.create_from_z_rotation(math.radians(cube.rotationAngle))
                         transformation_matrix = pr.matrix44.multiply(transformation_matrix, rot)
 
-                    # Передаем юниформ в шейдер
-                    glUniformMatrix4fv(self.uniformLocations["u_TransformationMatrix"],
+                    glUseProgram(self.cubeShader)
+                    glBindVertexArray(self.cubeVao)
+                    glUniformMatrix4fv(self.cubeUniformLocations["u_TransformationMatrix"],
                                        1, GL_FALSE, transformation_matrix)
                     # Рисуем каждую из сторон индивидуально, передвавая их цвет
                     for i in range(6):
-                        glUniform3fv(self.uniformLocations["u_FaceColor"], 1, COLORS[block.facesColors[i]])
-                        ptr = ctypes.c_void_p(i * 4 * 6)  # (void*)(i * 6 * sizeof(float))
+                        glUniform3fv(self.cubeUniformLocations["u_FaceNormal"], 1, NORMALS[i])
+                        glUniform3fv(self.cubeUniformLocations["u_FaceColor"], 1, COLORS[block.facesColors[i]])
+                        ptr = ctypes.c_void_p(i * 6 * 4)  # (void*)(i * 6 * sizeof(float))
                         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, ptr)
+
+                    glUseProgram(self.outlineShader)
+                    glBindVertexArray(self.outlineVao)
+                    glUniformMatrix4fv(self.outlineUniformLocations["u_TransformationMatrix"],
+                                       1, GL_FALSE, transformation_matrix)
+                    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, ctypes.c_void_p(0))
 
         glBindVertexArray(0)
         glUseProgram(0)
