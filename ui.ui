@@ -752,7 +752,7 @@
                     <enum>QFrame::Plain</enum>
                 </property>
                 <property name="text">
-                    <string>Reflectivity</string>
+                    <string>Light Chars</string>
                 </property>
                 <property name="alignment">
                     <set>Qt::AlignCenter</set>
@@ -845,6 +845,97 @@
                 </property>
                 <property name="text">
                     <string>D</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="QPushButton" name="b_CreateCube">
+                <property name="geometry">
+                    <rect>
+                        <x>830</x>
+                        <y>610</y>
+                        <width>111</width>
+                        <height>31</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">background-color: rgb(255, 135, 45); border: 1px solid black</string>
+                </property>
+                <property name="text">
+                    <string>Create</string>
+                </property>
+            </widget>
+            <widget class="QSpinBox" name="sb_SizeSelector">
+                <property name="geometry">
+                    <rect>
+                        <x>890</x>
+                        <y>570</y>
+                        <width>51</width>
+                        <height>22</height>
+                    </rect>
+                </property>
+                <property name="minimum">
+                    <number>1</number>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_19">
+                <property name="geometry">
+                    <rect>
+                        <x>830</x>
+                        <y>530</y>
+                        <width>111</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>12</pointsize>
+                    </font>
+                </property>
+                <property name="frameShape">
+                    <enum>QFrame::Box</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                    <string>Create Cube</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_20">
+                <property name="geometry">
+                    <rect>
+                        <x>830</x>
+                        <y>570</y>
+                        <width>51</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">border: 1px solid red</string>
+                </property>
+                <property name="frameShape">
+                    <enum>QFrame::Box</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                    <string>Size</string>
                 </property>
                 <property name="alignment">
                     <set>Qt::AlignCenter</set>

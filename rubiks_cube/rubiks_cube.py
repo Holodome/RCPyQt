@@ -1,6 +1,7 @@
 from typing import List
 
 import numpy as np
+import pyrr as pr
 
 from .block import Block
 
@@ -11,6 +12,8 @@ class RubiksCube:
     def __init__(self, size):
         self.size = size
         self.offset = np.array([-(size - 1), -(size - 1), -(size - 1)], dtype=np.float32)
+
+        self.blockSize: pr.Vector3 = pr.Vector3([3 / size, 3 / size, 3 / size])
 
         self.blocks = []
         for x in range(size):
@@ -125,22 +128,22 @@ class RubiksCube:
     def _return_list_to_cube(self, l1st: list, index: int, axis: int, list_number: int):
         size = self.size - 2 * list_number
 
-        if axis == 0:  # X
+        if axis == 0:
             i = index
             k = 0
-            for j in range(size):  # Top row
+            for j in range(size):
                 self.blocks[i][j + list_number][k + list_number] = l1st.pop(0).copy()
             j = size - 1
-            for k in range(1, size):  # Right row
+            for k in range(1, size):
                 self.blocks[i][j + list_number][k + list_number] = l1st.pop(0).copy()
             k = size - 1
-            for j in range(size - 2, -1, -1):  # Bottom row
+            for j in range(size - 2, -1, -1):
                 self.blocks[i][j + list_number][k + list_number] = l1st.pop(0).copy()
             j = 0
-            for k in range(size - 2, 0, -1):  # Left row
+            for k in range(size - 2, 0, -1):
                 self.blocks[i][j + list_number][k + list_number] = l1st.pop(0).copy()
 
-        elif axis == 1:  # Y
+        elif axis == 1:
             j = index
             i = 0
             for k in range(size):
@@ -155,7 +158,7 @@ class RubiksCube:
             for i in range(size - 2, 0, -1):
                 self.blocks[i + list_number][j][k + list_number] = l1st.pop(0).copy()
 
-        elif axis == 2:  # Z
+        elif axis == 2:
             k = index
             j = 0
             for i in range(size):
@@ -170,7 +173,6 @@ class RubiksCube:
             for j in range(size - 2, 0, -1):
                 self.blocks[i + list_number][j + list_number][k] = l1st.pop(0).copy()
 
-        # Resets all cubes position
         for i in range(self.size):
             for j in range(self.size):
                 for k in range(self.size):

@@ -7,7 +7,6 @@ from camera import Camera
 from rubiks_cube.cube_renderer import CubeRenderer
 from rubiks_cube.rubiks_cube import RubiksCube
 from utils import Light
-import time
 
 
 class CubeViewWidget(QtOpenGL.QGLWidget):
@@ -18,14 +17,14 @@ class CubeViewWidget(QtOpenGL.QGLWidget):
 
         super().__init__(fmt, parent)
         self.setMouseTracking(True)
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         self.camera = Camera()
         self.light = Light(pr.Vector3([0.0, 0.0, -10.0]), pr.Vector3([1.0, 1.0, 1.0]))
         self.reflectivity: float = 0.5
         self.diffuse_factor: float = 1.0
 
-        self.cube = RubiksCube(3)
+        self.figure = None
 
         self.previousMousePos = [0, 0]
         self.mouseButtons = {}
@@ -33,6 +32,7 @@ class CubeViewWidget(QtOpenGL.QGLWidget):
         self.camera_callback = lambda x, y: None
 
     def initializeGL(self) -> None:
+        print(self._opengl_info())
         # Контекст инициализируется здесь
         self.renderer = CubeRenderer()
 
@@ -42,6 +42,10 @@ class CubeViewWidget(QtOpenGL.QGLWidget):
         glCullFace(GL_FRONT)
 
     def paintGL(self) -> None:
+        self.clear()
+        if self.figure is None:
+            return
+
         # Обновление логики
         mouse_pos = self.mapFromGlobal(QtGui.QCursor.pos())
         mx = np.clip(mouse_pos.x(), 0, self.width())
@@ -58,8 +62,8 @@ class CubeViewWidget(QtOpenGL.QGLWidget):
         self.camera.move()
         self.camera_callback(self.camera.pitch, self.camera.yaw)
         # Отрисовка здесь
-        self.clear()
-        self.renderer.render(self.cube, self.camera, self.light, self.reflectivity, self.diffuse_factor)
+        self.renderer.render(self.figure, self.camera.projectionMatrix, self.camera.viewMatrix,
+                             self.light.color, self.light.position, self.reflectivity, self.diffuse_factor)
         self.update()
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
@@ -92,8 +96,8 @@ class CubeViewWidget(QtOpenGL.QGLWidget):
 """
 
     def clear(self):
-        # glClearColor(0.94117647058, 0.94117647058, 0.94117647058, 1.0)
-        glClearColor(0.2, 0.2, 0.2, 1.0)
+        glClearColor(0.94117647058, 0.94117647058, 0.94117647058, 1.0)
+        # glClearColor(0.2, 0.2, 0.2, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
 
@@ -101,6 +105,10 @@ class Application(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.initUi()
+
+        self.figure = None
+
+        self.ignoreRotationChange: bool = False
 
     def initUi(self):
         uic.loadUi("ui.ui", self)
@@ -122,8 +130,8 @@ class Application(QtWidgets.QMainWindow):
         self.s_Cx.valueChanged.connect(lambda: self.change_camera_rotation(0))
         self.s_Cy.valueChanged.connect(lambda: self.change_camera_rotation(1))
         self.view.camera_callback = self.manual_camera_rotation_change_callback
-
-        self.ignore_rotation_change: bool = False
+        # Создание куба
+        self.b_CreateCube.clicked.connect(self.create_cube)
 
     def change_color(self, color_ind):
         value = self.sender().value() / 255
@@ -142,7 +150,7 @@ class Application(QtWidgets.QMainWindow):
         self.view.diffuse_factor = value
 
     def change_camera_rotation(self, rot_ind):
-        if self.ignore_rotation_change:
+        if self.ignoreRotationChange:
             return
 
         value = self.sender().value()
@@ -152,7 +160,14 @@ class Application(QtWidgets.QMainWindow):
             self.view.camera.angleAroundPlayer.target = value
 
     def manual_camera_rotation_change_callback(self, x_rot, y_rot):
-        self.ignore_rotation_change = True
+        self.ignoreRotationChange = True
         self.s_Cx.setValue(x_rot)
         self.s_Cy.setValue(y_rot)
-        self.ignore_rotation_change = False
+        self.ignoreRotationChange = False
+
+    def create_cube(self):
+        size = self.sb_SizeSelector.value()
+        figure = RubiksCube(size)
+        self.figure = figure
+        self.view.figure = figure
+        self.view.setFocus()

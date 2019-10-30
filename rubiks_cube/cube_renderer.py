@@ -48,9 +48,12 @@ uniform vec3 u_FaceColor;
 uniform float u_Reflectivity;
 uniform float u_DiffuseFactor;
 
+uniform int u_IsOutline = 0;
+
 void main()
 {
-    if (u_FaceColor == vec3(0.0)) discard;
+    if (u_FaceColor == vec3(0.0) && u_IsOutline == 0) discard;
+    else if (u_IsOutline == 1) { out_Color = vec4(0.0, 0.0, 0.0, 1.0); return; } 
 
     vec3 unitNormal = normalize(pass_SurfaceNormal);
     vec3 unitLightVector = normalize(pass_ToLightVector);
@@ -67,32 +70,6 @@ void main()
     vec3 finalSpecular = dampedFactor * u_Reflectivity * u_LightColor;
 
     out_Color = vec4(diffuse, 1.0) * vec4(u_FaceColor, 1.0) + vec4(finalSpecular, 1.0);
-}
-"""
-
-OUTLINE_VERTEX_SHADER = """
-#version 330
-
-layout(location = 0) in vec3 in_Pos;
-
-uniform mat4 u_TransformationMatrix;
-uniform mat4 u_ProjectionMatrix;
-uniform mat4 u_ViewMatrix;
-
-void main()
-{
-    gl_Position = u_ProjectionMatrix * u_ViewMatrix * u_TransformationMatrix * vec4(in_Pos, 1.0);
-}
-"""
-
-OUTLINE_FRAGMENT_SHADER = """
-#version 330
-
-out vec4 out_Color;
-
-void main()
-{
-    out_Color = vec4(0.0, 0.0, 0.0, 1.0);
 }
 """
 
@@ -129,26 +106,16 @@ class CubeRenderer:
                                                  shaders.compileShader(CUBE_FRAGMENT_SHADER, GL_FRAGMENT_SHADER))
         # Uniform variables - способо передачи данных в шейдер из исполняемой программы
         self.cubeUniformLocations = {
-            # ProjectionMatrix отвечает за генерацию проекции 3D моделей на 2D экран
             "u_ProjectionMatrix":     glGetUniformLocation(self.cubeShader, "u_ProjectionMatrix"),
-            # ViewMatrix - transformationMatrix камеры
             "u_ViewMatrix":           glGetUniformLocation(self.cubeShader, "u_ViewMatrix"),
-            # Transformation matrix - позиция, вращение, размер обьекта
             "u_TransformationMatrix": glGetUniformLocation(self.cubeShader, "u_TransformationMatrix"),
-            "u_FaceColor":            glGetUniformLocation(self.cubeShader, "u_FaceColor"),
-            "u_LightColor":           glGetUniformLocation(self.cubeShader, "u_LightColor"),
-            "u_LightPosition":        glGetUniformLocation(self.cubeShader, "u_LightPosition"),
-            "u_Reflectivity":         glGetUniformLocation(self.cubeShader, "u_Reflectivity"),
-            "u_FaceNormal":           glGetUniformLocation(self.cubeShader, "u_FaceNormal"),
-            "u_DiffuseFactor":        glGetUniformLocation(self.cubeShader, "u_DiffuseFactor"),
-        }
-
-        self.outlineShader = shaders.compileProgram(shaders.compileShader(OUTLINE_VERTEX_SHADER, GL_VERTEX_SHADER),
-                                                    shaders.compileShader(OUTLINE_FRAGMENT_SHADER, GL_FRAGMENT_SHADER))
-        self.outlineUniformLocations = {
-            "u_ProjectionMatrix":     glGetUniformLocation(self.outlineShader, "u_ProjectionMatrix"),
-            "u_ViewMatrix":           glGetUniformLocation(self.outlineShader, "u_ViewMatrix"),
-            "u_TransformationMatrix": glGetUniformLocation(self.outlineShader, "u_TransformationMatrix"),
+            "u_FaceColor":     glGetUniformLocation(self.cubeShader, "u_FaceColor"),
+            "u_LightColor":    glGetUniformLocation(self.cubeShader, "u_LightColor"),
+            "u_LightPosition": glGetUniformLocation(self.cubeShader, "u_LightPosition"),
+            "u_Reflectivity":  glGetUniformLocation(self.cubeShader, "u_Reflectivity"),
+            "u_FaceNormal":    glGetUniformLocation(self.cubeShader, "u_FaceNormal"),
+            "u_DiffuseFactor": glGetUniformLocation(self.cubeShader, "u_DiffuseFactor"),
+            "u_IsOutline":     glGetUniformLocation(self.cubeShader, "u_IsOutline"),
         }
 
         # 8 вершин куба
@@ -200,18 +167,16 @@ class CubeRenderer:
 
         glBindVertexArray(0)
 
-    def render(self, cube: RubiksCube, camera, light, reflectivity, diffuse_factor):
+    def render(self, cube: RubiksCube, proj_mat: pr.Matrix44, view_mat: pr.Matrix44,
+               light_col: pr.Vector3, light_pos: pr.Vector3,
+               reflectivity: float, diffuse_factor: float):
         glUseProgram(self.cubeShader)
-        glUniformMatrix4fv(self.cubeUniformLocations["u_ProjectionMatrix"], 1, GL_FALSE, camera.projectionMatrix)
-        glUniformMatrix4fv(self.cubeUniformLocations["u_ViewMatrix"], 1, GL_FALSE, camera.viewMatrix)
-        glUniform3fv(self.cubeUniformLocations["u_LightPosition"], 1, light.position)
-        glUniform3fv(self.cubeUniformLocations["u_LightColor"], 1, light.color)
+        glUniformMatrix4fv(self.cubeUniformLocations["u_ProjectionMatrix"], 1, GL_FALSE, proj_mat)
+        glUniformMatrix4fv(self.cubeUniformLocations["u_ViewMatrix"], 1, GL_FALSE, view_mat)
+        glUniform3fv(self.cubeUniformLocations["u_LightPosition"], 1, light_pos)
+        glUniform3fv(self.cubeUniformLocations["u_LightColor"], 1, light_col)
         glUniform1f(self.cubeUniformLocations["u_Reflectivity"], reflectivity)
         glUniform1f(self.cubeUniformLocations["u_DiffuseFactor"], diffuse_factor)
-
-        glUseProgram(self.outlineShader)
-        glUniformMatrix4fv(self.outlineUniformLocations["u_ProjectionMatrix"], 1, GL_FALSE, camera.projectionMatrix)
-        glUniformMatrix4fv(self.outlineUniformLocations["u_ViewMatrix"], 1, GL_FALSE, camera.viewMatrix)
 
         for row in cube.blocks:
             for col in row:
@@ -221,6 +186,8 @@ class CubeRenderer:
 
                     # Считаем transformation_matrix исходя из позиции блока в кубе (2 - размер одного блока)
                     transformation_matrix = pr.matrix44.create_from_translation(cube.offset + block.position * 2)
+                    transformation_matrix = pr.matrix44.multiply(transformation_matrix, pr.matrix44.create_from_scale(
+                        cube.blockSize))
                     if cube.turning and (cube.turningWholeCube or block in cube.rotatingBlocks):
                         if cube.rotationAxis == 0:
                             rot = pr.matrix44.create_from_x_rotation(math.radians(cube.rotationAngle))
@@ -230,21 +197,18 @@ class CubeRenderer:
                             rot = pr.matrix44.create_from_z_rotation(math.radians(cube.rotationAngle))
                         transformation_matrix = pr.matrix44.multiply(transformation_matrix, rot)
 
-                    glUseProgram(self.cubeShader)
                     glBindVertexArray(self.cubeVao)
                     glUniformMatrix4fv(self.cubeUniformLocations["u_TransformationMatrix"],
                                        1, GL_FALSE, transformation_matrix)
+                    glUniform1i(self.cubeUniformLocations["u_IsOutline"], 0)
                     # Рисуем каждую из сторон индивидуально, передвавая их цвет
                     for i in range(6):
                         glUniform3fv(self.cubeUniformLocations["u_FaceNormal"], 1, NORMALS[i])
                         glUniform3fv(self.cubeUniformLocations["u_FaceColor"], 1, COLORS[block.facesColors[i]])
                         ptr = ctypes.c_void_p(i * 6 * 4)  # (void*)(i * 6 * sizeof(float))
                         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, ptr)
-
-                    glUseProgram(self.outlineShader)
+                    glUniform1i(self.cubeUniformLocations["u_IsOutline"], 1)
                     glBindVertexArray(self.outlineVao)
-                    glUniformMatrix4fv(self.outlineUniformLocations["u_TransformationMatrix"],
-                                       1, GL_FALSE, transformation_matrix)
                     glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, ctypes.c_void_p(0))
 
         glBindVertexArray(0)
