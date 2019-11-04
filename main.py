@@ -2,7 +2,8 @@ import sys
 
 from PyQt5.QtWidgets import QApplication
 
-from interface import Application
+from interface.application import Application
+
 
 def main():
     # PyQt5 отключает сообщения об ошибках

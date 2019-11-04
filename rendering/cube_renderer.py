@@ -48,12 +48,9 @@ uniform vec3 u_FaceColor;
 uniform float u_Reflectivity;
 uniform float u_DiffuseFactor;
 
-uniform int u_IsOutline = 0;
-
 void main()
 {
-    if (u_FaceColor == vec3(0.0) && u_IsOutline == 0) discard;
-    else if (u_IsOutline == 1) { out_Color = vec4(0.0, 0.0, 0.0, 1.0); return; } 
+    if (u_FaceColor == vec3(0.0)) { out_Color = vec4(0.0, 0.0, 0.0, 1.0); return; } 
 
     vec3 unitNormal = normalize(pass_SurfaceNormal);
     vec3 unitLightVector = normalize(pass_ToLightVector);
@@ -136,27 +133,12 @@ class CubeRenderer:
         glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo)  # Используем буффер вершин второй раз
         outline_indices_ebo = glGenBuffers(1)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, outline_indices_ebo)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 192, np.array([5, 7, 7, 3, 3, 1, 1, 5,
-                                                             0, 2, 2, 6, 6, 4, 4, 0,
-                                                             5, 4, 4, 6, 6, 7, 7, 5,
-                                                             3, 2, 2, 0, 0, 1, 1, 3,
-                                                             1, 0, 0, 4, 4, 5, 5, 1,
-                                                             7, 6, 6, 2, 2, 3, 3, 7], np.uint32),
-                     GL_STATIC_DRAW)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, None)
-        glEnableVertexAttribArray(0)
-
-        self.squareVao = glGenVertexArrays(1)
-        glBindVertexArray(self.squareVao)
-        square_vertices_vbo = glGenBuffers(1)
-        glBindBuffer(GL_ARRAY_BUFFER, square_vertices_vbo)
-        glBufferData(GL_ARRAY_BUFFER, 72, np.array([1, -1, -1,
-                                                    1, 1, -1,
-                                                    1, 1, 1,
-
-                                                    1, 1, 1,
-                                                    1, -1, 1,
-                                                    1, -1, -1, ], dtype=np.float32),
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 96, np.array([5, 7, 7, 3, 3, 1, 1, 5,  # Верхняя сторона
+                                                            4, 6, 6, 2, 2, 0, 0, 4,  # Нижняя сторона
+                                                            7, 6,
+                                                            5, 4,
+                                                            1, 0,
+                                                            3, 2], np.uint32),
                      GL_STATIC_DRAW)
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(0)
@@ -167,7 +149,7 @@ class CubeRenderer:
         # Они работают намного быстрей идентичных на CPU
         # В данном случае шейдер определяет позицию вершин всех блкоков куба и дает им цвета
         # NOTE: по некоторой причине на MacOS Qt не может запросить нужную версию OpenGL - форматирую код под нужную
-        # NOTE: в некоторых версиях OpenGL шейдер не может быть validated без привязанного VertexArray
+        # NOTE: в некоторых версиях OpenGL шейдер не может быть скомпилирован без привязанного VertexArray
         self.cubeShader = shaders.compileProgram(shaders.compileShader(CUBE_VERTEX_SHADER % (major, minor),
                                                                        GL_VERTEX_SHADER),
                                                  shaders.compileShader(CUBE_FRAGMENT_SHADER % (major, minor),
@@ -183,7 +165,6 @@ class CubeRenderer:
             "u_Reflectivity":         glGetUniformLocation(self.cubeShader, "u_Reflectivity"),
             "u_FaceNormal":           glGetUniformLocation(self.cubeShader, "u_FaceNormal"),
             "u_DiffuseFactor":        glGetUniformLocation(self.cubeShader, "u_DiffuseFactor"),
-            "u_IsOutline":            glGetUniformLocation(self.cubeShader, "u_IsOutline"),
         }
         glUseProgram(self.cubeShader)
         glUniformMatrix4fv(self.cubeUniformLocations["u_ViewMatrix"], 1, GL_FALSE, pr.Matrix44.identity())
@@ -196,7 +177,6 @@ class CubeRenderer:
         glUseProgram(self.cubeShader)  # Используем один шейдер на весь куб
 
         glUniformMatrix4fv(self.cubeUniformLocations["u_ProjectionMatrix"], 1, GL_FALSE, proj_mat)
-        # glUniformMatrix4fv(self.cubeUniformLocations["u_ViewMatrix"], 1, GL_FALSE, pr.Matrix44.identity())
         glUniform3fv(self.cubeUniformLocations["u_LightPosition"], 1, light_pos)
         glUniform3fv(self.cubeUniformLocations["u_LightColor"], 1, light_col)
         glUniform1f(self.cubeUniformLocations["u_Reflectivity"], reflectivity)
@@ -227,10 +207,9 @@ class CubeRenderer:
                                        1, GL_FALSE, transformation_matrix)
                     # Отрисовка сторон куба
                     glBindVertexArray(self.cubeVao)
-                    glUniform1i(self.cubeUniformLocations["u_IsOutline"], 0)
                     for i in range(6):  # Рисуем каждую из сторон индивидуально, передвавая их цвет
                         color = block.facesColors[i]
-                        if color == 0:
+                        if color == 0 and not cube.turning:
                             continue
 
                         glUniform3fv(self.cubeUniformLocations["u_FaceNormal"], 1, NORMALS[i])
@@ -239,40 +218,7 @@ class CubeRenderer:
                         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, ptr)
                     # Отрисовка внешней линии
                     glBindVertexArray(self.outlineVao)
-                    glUniform1i(self.cubeUniformLocations["u_IsOutline"], 1)
+                    glUniform3fv(self.cubeUniformLocations["u_FaceColor"], 1, COLORS[0])
                     glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, None)
-                    # Отрисовка черных квадратов
-                    """
-                    if not cube.turning or cube.turningWholeCube:
-                        continue
-
-                    length = cube.size * cube.blockSize.x
-
-                    transformation_matrix = pr.Matrix44()
-                    if cube.rotationAxis == 1:
-                        transformation_matrix = pr.matrix44.create_from_translation(
-                            [length / 2, length / 2, length / 2])
-                        transformation_matrix = pr.matrix44.multiply(transformation_matrix,
-                                                                     pr.matrix44.create_from_z_rotation(
-                                                                         math.radians(90)))
-                        transformation_matrix = pr.matrix44.multiply(transformation_matrix,
-                                                                     pr.matrix44.create_from_translation(
-                                                                         [-length / 2, -length / 2, -length / 2]))
-                    elif cube.rotationAxis == 2:
-                        transformation_matrix = pr.matrix44.create_from_translation(
-                            [length / 2, length / 2, length / 2])
-                        transformation_matrix = pr.matrix44.multiply(transformation_matrix,
-                                                                     pr.matrix44.create_from_y_rotation(
-                                                                         math.radians(-90)))
-                        transformation_matrix = pr.matrix44.multiply(transformation_matrix,
-                                                                     pr.matrix44.create_from_translation(
-                                                                         [-length / 2, -length / 2, -length / 2]))
-
-                    if cube.rotationIndex != 0:
-                        width = cube.blockSize.x * cube.rotationIndex"""
-
-                    glBindVertexArray(self.squareVao)
-                    glUniform1i(self.cubeUniformLocations["u_IsOutline"], 0)
-                    glDrawArrays(GL_TRIANGLES, 0, 18)
 
         glBindVertexArray(0)

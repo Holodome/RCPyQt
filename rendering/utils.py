@@ -1,8 +1,7 @@
-import dataclasses
-
 import pyrr as pr
 
 
+# Класс для более плавных вращений и приближения камеры
 class SmoothFloat:
     def __init__(self, init_value, agility):
         self.actual = init_value
@@ -15,7 +14,8 @@ class SmoothFloat:
         self.actual += change
 
 
-@dataclasses.dataclass
 class Light:
-    position: pr.Vector3
-    color: pr.Vector3
+
+    def __init__(self, position: pr.Vector3, color: pr.Vector3):
+        self.position = position
+        self.color = color

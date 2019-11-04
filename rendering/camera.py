@@ -3,7 +3,7 @@ import math
 import numpy as np
 from pyrr import Matrix44, Vector3, matrix44
 
-from utils import SmoothFloat
+from rendering.utils import SmoothFloat
 
 FOV = 60
 NEAR_PLANE = 0.1
