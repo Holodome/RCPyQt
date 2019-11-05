@@ -12,24 +12,24 @@ FAR_PLANE = 50
 
 class Camera:
     def __init__(self):
+        # Два главных аттрибута камеры
         self.viewMatrix: Matrix44 = Matrix44.identity(dtype=np.float32)
         self.projectionMatrix: Matrix44 = matrix44.create_perspective_projection(FOV,
                                                                                  1,
                                                                                  NEAR_PLANE,
                                                                                  FAR_PLANE,
                                                                                  dtype=np.float32)
-
+        # X, Y
         self.pitch: float = 0
         self.yaw: float = 0
-
+        # Переменные с плавным переходом
         self.angleAroundPlayer = SmoothFloat(0, 10)
         self.distanceFromPlayer = SmoothFloat(20, 5)
 
-    def move(self):
+    def update(self):
         self.distanceFromPlayer.update(1.0 / 60)
         self.angleAroundPlayer.update(1.0 / 60)
-        self.yaw = self.angleAroundPlayer.actual
-        self.yaw %= 360
+        self.yaw = self.angleAroundPlayer.actual % 360
         self.update_view_matrix()
 
     def update_view_matrix(self):

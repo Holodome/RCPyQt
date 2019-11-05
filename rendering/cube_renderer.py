@@ -46,7 +46,7 @@ uniform vec3 u_LightColor;
 uniform vec3 u_FaceColor;
 
 uniform float u_Reflectivity;
-uniform float u_DiffuseFactor;
+uniform float u_ColorFactor;
 
 void main()
 {
@@ -55,7 +55,7 @@ void main()
     vec3 unitNormal = normalize(pass_SurfaceNormal);
     vec3 unitLightVector = normalize(pass_ToLightVector);
 
-    vec3 diffuse = vec3(u_DiffuseFactor);
+    vec3 diffuse = vec3(u_ColorFactor);
 
     vec3 unitVectorToCamera = normalize(pass_ToCameraVector);
     vec3 lightDirection = -unitLightVector;
@@ -164,7 +164,7 @@ class CubeRenderer:
             "u_LightPosition":        glGetUniformLocation(self.cubeShader, "u_LightPosition"),
             "u_Reflectivity":         glGetUniformLocation(self.cubeShader, "u_Reflectivity"),
             "u_FaceNormal":           glGetUniformLocation(self.cubeShader, "u_FaceNormal"),
-            "u_DiffuseFactor":        glGetUniformLocation(self.cubeShader, "u_DiffuseFactor"),
+            "u_ColorFactor":          glGetUniformLocation(self.cubeShader, "u_ColorFactor"),
         }
         glUseProgram(self.cubeShader)
         glUniformMatrix4fv(self.cubeUniformLocations["u_ViewMatrix"], 1, GL_FALSE, pr.Matrix44.identity())
@@ -180,7 +180,7 @@ class CubeRenderer:
         glUniform3fv(self.cubeUniformLocations["u_LightPosition"], 1, light_pos)
         glUniform3fv(self.cubeUniformLocations["u_LightColor"], 1, light_col)
         glUniform1f(self.cubeUniformLocations["u_Reflectivity"], reflectivity)
-        glUniform1f(self.cubeUniformLocations["u_DiffuseFactor"], diffuse_factor)
+        glUniform1f(self.cubeUniformLocations["u_ColorFactor"], diffuse_factor)
 
         for row in cube.blocks:
             for col in row:

@@ -1,3 +1,6 @@
+"""
+Всопомогательный статический класс для сохранения и загрузки кубиков
+"""
 import csv
 
 from .rubiks_cube import RubiksCube

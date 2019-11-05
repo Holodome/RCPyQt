@@ -20,9 +20,11 @@ class Application(QtWidgets.QMainWindow, Ui_RubiksCube):
 
     def initUi(self):
         self.setWindowTitle("Rubik's Cube")
+        # Главынй виджет, отвечающий за отрисовку фигур
         self.view = FigureViewWidget(self)
         self.view.setGeometry(0, 0, 800, 800)
-        # Цвет света
+        # Большинство названий виджетов - первые буквы соответствующих слов
+        # Цвет освещения
         self.s_LCr.valueChanged.connect(lambda: self.change_color(0))
         self.s_LCg.valueChanged.connect(lambda: self.change_color(1))
         self.s_LCb.valueChanged.connect(lambda: self.change_color(2))
@@ -36,7 +38,7 @@ class Application(QtWidgets.QMainWindow, Ui_RubiksCube):
         # Камера
         self.s_Cx.valueChanged.connect(lambda: self.change_camera_rotation(0))
         self.s_Cy.valueChanged.connect(lambda: self.change_camera_rotation(1))
-        self.view.camera_callback = self.manual_camera_rotation_change_callback
+        self.view.cameraCallback = self.manual_camera_rotation_change_callback
         # Создание куба
         self.b_CreateCube.clicked.connect(self.create_cube)
         # Вращение куба
@@ -80,7 +82,7 @@ class Application(QtWidgets.QMainWindow, Ui_RubiksCube):
 
     def change_diffuse(self):
         value = self.sender().value() / 100
-        self.view.diffuse_factor = value
+        self.view.colorFactor = value
 
     def change_camera_rotation(self, rot_ind):
         if self.ignoreRotationChange:
@@ -114,26 +116,27 @@ class Application(QtWidgets.QMainWindow, Ui_RubiksCube):
 
     def save_cube(self):
         path = self.get_save_filepath()
-        if not path: return
-        CubeState.save(self.figure, path)
+        if path:
+            CubeState.save(self.figure, path)
 
     def save_state(self):
         path = self.get_save_filepath()
-        if not path: return
-        with open(path, "w") as out:
-            writer = csv.writer(out, delimiter=",")
-            writer.writerow(list(map(lambda e: int(e.value()), self.state)))
+        if path:
+            with open(path, "w") as out:
+                writer = csv.writer(out, delimiter=",")
+                writer.writerow(list(map(lambda e: int(e.value()), self.state)))
 
     def load_cube(self):
         path = self.get_open_filepath()
-        if not path: return
-        figure = CubeState.load(path)
-        if figure is None: return
-        self.set_figure(figure)
+        if path:
+            figure = CubeState.load(path)
+            if figure is not None:
+                self.set_figure(figure)
 
     def load_state(self):
         path = self.get_open_filepath()
-        if not path: return
+        if not path:
+            return
         with open(path) as f:
             reader = csv.reader(f, delimiter=",")
             try:
@@ -152,16 +155,16 @@ class Application(QtWidgets.QMainWindow, Ui_RubiksCube):
 
     def start_scrambling(self):
         times = self.sb_ShuffleSelector.value()
-        self.view.figure_algorithms.set_scramble(times)
+        self.view.figureAlgorithms.set_scramble(times)
 
     def set_figure(self, figure):
         self.figure = figure
         self.view.figure = figure
-        self.view.figure_algorithms.reset()
+        self.view.figureAlgorithms.reset()
 
     def make_algorithm(self):
         alg_ind = self.c_AlgSelect.currentIndex()
         if alg_ind == 0:
-            self.view.figure_algorithms.makeCheckered = True
+            self.view.figureAlgorithms.makeCheckered = True
         elif alg_ind == 1:
-            self.view.figure_algorithms.makeCubeInCube = True
+            self.view.figureAlgorithms.makeCubeInCube = True

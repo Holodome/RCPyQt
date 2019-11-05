@@ -1,6 +1,3 @@
-# Fix qt import error
-# Include this file before import PyQt5
-
 import sys
 
 from PyQt5.QtWidgets import QApplication

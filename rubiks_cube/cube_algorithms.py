@@ -6,13 +6,15 @@ from .rubiks_cube import RubiksCube
 
 class CubeAlgorithms:
     def __init__(self):
-        self.turning: bool = False
+        self.turning: bool = False  # Происходит какое-то действие
         self.scrambleTimesLeft: int = 0
-        self.turns: List[Tuple[int, int, bool]] = []
 
+        self.turns: List[Tuple[int, int, bool]] = []
+        # Флаги, которые показывают начало алгоритма
         self.makeCheckered = False
         self.makeCubeInCube = False
 
+    # Обновление действий над кубиком
     def update(self, cube: RubiksCube):
         if cube.turning or cube.turningWholeCube:
             return
@@ -71,13 +73,6 @@ class CubeAlgorithms:
             (0, 0, 0),  # L
             (a, 1, 1),  # U
         ]
-        # a,2,t - F
-        # 0,0,f - L
-        # a,1,f - U'
-        # a,0,t - R
-        # 0,2,f - B
-        # 0,1,t - D'
-
         # B2
         # R' D R D' R' D R U
         # R' D' R D R' D' R U'
@@ -113,7 +108,7 @@ class CubeAlgorithms:
                 for j in range(i + 1):
                     new = (abs(el[0] - j), el[1], el[2])
                     self.turns.append(new)
-        for i in range((cube.size - 1) // 2):  # Меньшие кубы
+        for i in range((cube.size - 1) // 2 - 1, -1, -1):  # Меньшие кубы
             for el in basic_inner:
                 for j in range(i + 1):
                     new = (abs(el[0] - j), el[1], el[2])

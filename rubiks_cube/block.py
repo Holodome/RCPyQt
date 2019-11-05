@@ -13,7 +13,7 @@ class Block:
         # WHITE - YELLOW    TOP - BOTTOM
         # GREEN - BLUE      LEFT - RIGHT
         # ORANGE - RED      BACK - FRONT
-        self.position = numpy.asarray([x, y, z], numpy.uint8)
+        self.position = numpy.array([x, y, z], numpy.uint8)
         self.facesColors = numpy.zeros(6, numpy.uint8)
 
         self.numberOfColors = 0

@@ -27,8 +27,8 @@ class RubiksCube:
                 row.append(col)
             self.blocks.append(row)
 
-        self.rotatingBlocks: List[Block] = []
-        self.cycleLists: List[List[Block]] = []
+        self.rotatingBlocks: List[Block] = []  # Список вращающихся блоков
+        self.cycleLists: List[List[Block]] = []  # Связано с сложной системой поворотов
 
         self.turningClockwise: bool = True
         self.turningWholeCube: bool = False
@@ -41,13 +41,13 @@ class RubiksCube:
     def update(self, dt):
         if self.turning:
             if self.rotationAngle < 90.0:
+                # Некоторое смягчение поворотов
                 if self.rotationAngle < 22.5:
                     self.rotationAngle += 2 * ROTATION_SPEED / (self.rotationAngle / -22.5 + 2) * dt
                 elif self.rotationAngle > 77.5:
                     self.rotationAngle += 2 * ROTATION_SPEED / ((self.rotationAngle - 77.5) / 90 + 1) * dt
                 else:
                     self.rotationAngle += 2 * ROTATION_SPEED * dt
-
             else:
                 self.rotationAngle = 0
                 if self.turningWholeCube:
