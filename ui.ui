@@ -944,6 +944,262 @@
                     <set>Qt::AlignCenter</set>
                 </property>
             </widget>
+            <widget class="QPushButton" name="b_SF">
+                <property name="geometry">
+                    <rect>
+                        <x>970</x>
+                        <y>610</y>
+                        <width>91</width>
+                        <height>31</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">background-color: red; border: 1px solid black</string>
+                </property>
+                <property name="text">
+                    <string>Save Figure</string>
+                </property>
+            </widget>
+            <widget class="QPushButton" name="b_SS">
+                <property name="geometry">
+                    <rect>
+                        <x>970</x>
+                        <y>540</y>
+                        <width>91</width>
+                        <height>31</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">background-color: red; border: 1px solid black</string>
+                </property>
+                <property name="text">
+                    <string>Save Settings</string>
+                </property>
+            </widget>
+            <widget class="QPushButton" name="b_LF">
+                <property name="geometry">
+                    <rect>
+                        <x>1080</x>
+                        <y>610</y>
+                        <width>91</width>
+                        <height>31</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">background-color: rgb(196, 255, 0); border: 1px solid black</string>
+                </property>
+                <property name="text">
+                    <string>Load Figure</string>
+                </property>
+            </widget>
+            <widget class="QPushButton" name="b_LS">
+                <property name="geometry">
+                    <rect>
+                        <x>1080</x>
+                        <y>540</y>
+                        <width>91</width>
+                        <height>31</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">background-color: rgb(196, 255, 0); border: 1px solid black</string>
+                </property>
+                <property name="text">
+                    <string>Load Settings</string>
+                </property>
+            </widget>
+            <widget class="Line" name="line_6">
+                <property name="geometry">
+                    <rect>
+                        <x>830</x>
+                        <y>650</y>
+                        <width>361</width>
+                        <height>16</height>
+                    </rect>
+                </property>
+                <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                </property>
+            </widget>
+            <widget class="Line" name="line_7">
+                <property name="geometry">
+                    <rect>
+                        <x>940</x>
+                        <y>510</y>
+                        <width>20</width>
+                        <height>151</height>
+                    </rect>
+                </property>
+                <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                </property>
+            </widget>
+            <widget class="QPushButton" name="b_RS">
+                <property name="geometry">
+                    <rect>
+                        <x>830</x>
+                        <y>670</y>
+                        <width>101</width>
+                        <height>31</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">background-color: rgb(234, 234, 0); border: 1px solid black</string>
+                </property>
+                <property name="text">
+                    <string>Random Shuffle</string>
+                </property>
+            </widget>
+            <widget class="QSpinBox" name="sb_ShuffleSelector">
+                <property name="geometry">
+                    <rect>
+                        <x>890</x>
+                        <y>720</y>
+                        <width>41</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="minimum">
+                    <number>1</number>
+                </property>
+                <property name="maximum">
+                    <number>999</number>
+                </property>
+                <property name="value">
+                    <number>20</number>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_21">
+                <property name="geometry">
+                    <rect>
+                        <x>830</x>
+                        <y>720</y>
+                        <width>51</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">border: 1px solid red</string>
+                </property>
+                <property name="frameShape">
+                    <enum>QFrame::Box</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                    <string>Times</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
+            <widget class="Line" name="line_8">
+                <property name="geometry">
+                    <rect>
+                        <x>940</x>
+                        <y>650</y>
+                        <width>20</width>
+                        <height>101</height>
+                    </rect>
+                </property>
+                <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                </property>
+            </widget>
+            <widget class="QComboBox" name="c_AlgSelect">
+                <property name="geometry">
+                    <rect>
+                        <x>970</x>
+                        <y>680</y>
+                        <width>201</width>
+                        <height>22</height>
+                    </rect>
+                </property>
+                <item>
+                    <property name="text">
+                        <string>Checkered</string>
+                    </property>
+                </item>
+                <item>
+                    <property name="text">
+                        <string>Cube In Cube</string>
+                    </property>
+                </item>
+            </widget>
+            <widget class="QPushButton" name="b_DoAlg">
+                <property name="geometry">
+                    <rect>
+                        <x>970</x>
+                        <y>720</y>
+                        <width>75</width>
+                        <height>23</height>
+                    </rect>
+                </property>
+                <property name="text">
+                    <string>Do</string>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_22">
+                <property name="geometry">
+                    <rect>
+                        <x>1060</x>
+                        <y>720</y>
+                        <width>111</width>
+                        <height>21</height>
+                    </rect>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">border: 1px solid red</string>
+                </property>
+                <property name="frameShape">
+                    <enum>QFrame::Box</enum>
+                </property>
+                <property name="frameShadow">
+                    <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                    <string>Algorithms</string>
+                </property>
+                <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                </property>
+            </widget>
         </widget>
         <widget class="QMenuBar" name="menubar">
             <property name="geometry">

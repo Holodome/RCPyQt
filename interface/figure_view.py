@@ -5,8 +5,9 @@ from PyQt5 import QtCore, QtGui, QtOpenGL
 
 from rendering import *
 from rendering.cube_renderer import CubeRenderer
+from rubiks_cube.cube_algorithms import CubeAlgorithms
 
-
+import time
 class FigureViewWidget(QtOpenGL.QGLWidget):
     def __init__(self, parent=None):
         fmt = QtOpenGL.QGLFormat()
@@ -24,11 +25,14 @@ class FigureViewWidget(QtOpenGL.QGLWidget):
         self.diffuse_factor: float = 1.0
 
         self.figure = None
+        self.figure_algorithms = CubeAlgorithms()
 
         self.previousMousePos = [0, 0]
         self.mouseButtons = {}
 
         self.camera_callback = lambda x, y: None
+
+        self.lastTime = time.time()
 
     def initializeGL(self) -> None:
         print(self._opengl_info())
@@ -44,7 +48,13 @@ class FigureViewWidget(QtOpenGL.QGLWidget):
         self.clear()
         if self.figure is None:
             return
-        self.figure.update()
+
+        now = time.time()
+        dt = now - self.lastTime
+        self.lastTime = now
+
+        self.figure_algorithms.update(self.figure)
+        self.figure.update(dt)
 
         # Обновление логики
         mouse_pos = self.mapFromGlobal(QtGui.QCursor.pos())
@@ -98,5 +108,4 @@ class FigureViewWidget(QtOpenGL.QGLWidget):
 
     def clear(self):
         glClearColor(0.94117647058, 0.94117647058, 0.94117647058, 1.0)
-        # glClearColor(0.2, 0.2, 0.2, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)

@@ -5,7 +5,7 @@ import pyrr as pr
 
 from .block import Block
 
-ROTATION_SPEED = 4.5
+ROTATION_SPEED = 400
 
 
 class RubiksCube:
@@ -38,15 +38,15 @@ class RubiksCube:
         self.rotationIndex: int = 0
         self.rotationAxis: int = 0
 
-    def update(self):
+    def update(self, dt):
         if self.turning:
             if self.rotationAngle < 90.0:
                 if self.rotationAngle < 22.5:
-                    self.rotationAngle += 2 * ROTATION_SPEED / (self.rotationAngle / -22.5 + 2)
+                    self.rotationAngle += 2 * ROTATION_SPEED / (self.rotationAngle / -22.5 + 2) * dt
                 elif self.rotationAngle > 77.5:
-                    self.rotationAngle += 2 * ROTATION_SPEED / ((self.rotationAngle - 77.5) / 90 + 1)
+                    self.rotationAngle += 2 * ROTATION_SPEED / ((self.rotationAngle - 77.5) / 90 + 1) * dt
                 else:
-                    self.rotationAngle += 2 * ROTATION_SPEED
+                    self.rotationAngle += 2 * ROTATION_SPEED * dt
 
             else:
                 self.rotationAngle = 0
